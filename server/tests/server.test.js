@@ -10,7 +10,8 @@ var todos = [{
     text: "Hell 1"
 },{
     _id: new ObjectID(),
-    text: "Hell 2"
+    text: "Hell 2",
+    completed: true
 }];
 
 beforeEach((done) => {
@@ -151,4 +152,51 @@ describe('DELETE /todos/:id', () => {
         .expect(404)
         .end(done);
     });
+});
+
+
+describe('PATCH /todos/:id', () => {
+    it('should update a todo doc', (done) => {
+
+        var hexId= todos[0]._id.toHexString();
+
+        var text = 'Updated One';
+        var completed = true;
+
+
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send({text, completed})
+        .expect(200)
+        .expect((res) => {
+            
+            expect(res.body.todo.text).toBe(text);
+            expect(res.body.todo.completed).toBe(completed);
+            expect(res.body.todo.completedAt).toBeA('number');
+            
+        })
+        .end(done);
+    });
+
+    it('should clear a completedAt if a todo is not completed', (done)=> {
+        var hexId= todos[1]._id.toHexString();
+        var text = 'Updated One';
+        var completed = false;
+
+        request(app)
+        .patch(`/todos/${hexId}`)
+        .send({text, completed})
+        .expect(200)
+        .expect((res) => {
+            
+            expect(res.body.todo.text).toBe(text);
+            expect(res.body.todo.completed).toBe(completed);
+            expect(res.body.todo.completedAt).toNotExist();
+            
+        
+         })
+        .end(done);
+    });
+
+    
 });
